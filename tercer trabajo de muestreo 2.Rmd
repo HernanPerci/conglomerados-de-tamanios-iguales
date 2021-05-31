@@ -1,0 +1,253 @@
+---
+title: "TAREA CONGLOMERADOS DE TAMAÑOS IGUALES"
+author: "Hernan Perci Nuñez Palomino"
+date: "Ultima edicion `r format(Sys.time(), '%d %B %Y')`"
+output: 
+  word_document:
+    df_print: kable 
+    toc: yes
+    fig_width: 5
+    fig_height: 5
+    fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+
+library(tidyverse)
+
+```
+
+
+Se desea estimar cuánto dinero tienen en promedio los estudiantes de una residencia estudiantil. En vez de obtener una lista de todos los estudiantes que pertenecen a la residencia y extraer una muestra aleatoria simple, observa que dicha residencia tiene 100 dormitorios, cada uno con cuatro estudiantes; elige 5 dormitorios al azar y pregunta a cada estudiante por la cantidad de dinero que tiene. Los resultados son:
+
+```{r, echo = FALSE}
+
+tabla_de_datos <- function(n, M) {
+    datos <- matrix(c(3.08, 2.60, 3.44, 3.04, 2.36, 3.04, 3.28, 2.68, 2.00, 2.56, 2.52, 1.88, 3.00, 2.88, 3.44, 3.64, 2.68, 1.92, 3.28, 3.20), ncol = n)
+    colnames(datos) <- paste("DORMITORIO", 1:n) # asignar nombres a columnas
+    tabla <- as_tibble(datos)
+    tabla
+}
+tabla <- tabla_de_datos(n = 5, M = 4)
+tabla
+
+```
+
+
+i) Estime la cantidad de dinero que tienen los estudiantes de la residencia y estime su error de muestreo
+
+```{r}
+
+media_estimado_1 <- function(N, n, M) {
+  U <- c(NA)
+  k <- 0
+  for (i in 1:n) {
+    for (j in 1:M) {
+      k <- k+1
+      U[k] <- tabla[[i]][j]
+    }
+  }
+  
+  media_estimada <- sum(U)/(n*M)
+  media_estimada
+  
+}
+
+  media_estimado_por_elemento <- media_estimado_1(N = 100, n = 5, M = 4)
+  media_estimado_por_elemento
+  
+```
+
+
+```{r}
+
+  total_estimado_1 <- function(N, n, M) {
+    
+    total_estimado <- N*M*media_estimado_por_elemento
+    total_estimado
+  }
+
+  total_estimado_por_elemento <- total_estimado_1(N = 100, n = 5, M = 4)
+  total_estimado_por_elemento
+  
+```
+
+
+```{r}
+
+cuasivarianza_estimada_1 <- function(N, n, M) {
+  U <- c(NA)
+  k <- 0
+  for (i in 1:n) {
+    for (j in 1:M) {
+      k <- k+1
+      U[k] <- (tabla[[i]][j] - media_estimado_por_elemento)^2
+    }
+  }
+  cuasivarianza_estimada <- sum(U)/((n*M)-1)
+  cuasivarianza_estimada
+  
+}
+
+cuasivarianza_por_elemento <- cuasivarianza_estimada_1(N = 100, n =5, M = 4)
+cuasivarianza_por_elemento
+
+```
+
+
+```{r}
+
+varianza_total_estimado_1 <- function(n, N, M) {
+  
+  a <- (N^2) / n
+  b <- 1 - (n / N)
+  c <- M * cuasivarianza_por_elemento
+  varianza_estimada <- a * b * c
+  varianza_estimada
+}
+
+varianza_total_estimado_por_elemento <- varianza_total_estimado_1(N = 100, n =5, M = 4)
+varianza_total_estimado_por_elemento
+
+```
+
+
+```{r}
+
+error_de_muestreo_1 <- function() {
+  
+  error_de_muestreo <- sqrt(varianza_total_estimado_por_elemento)
+  error_de_muestreo
+}
+
+error_de_muestreo_estimado_por_elemento <- error_de_muestreo_1()
+error_de_muestreo_estimado_por_elemento
+
+```
+
+
+ii) Estime la cantidad de dinero que tienen los estudiantes de la residencia por dormitorio y estime su error de muestreo
+
+```{r}
+
+media_estimado_2 <- function(N, n, M) {
+  U <- c(NA)
+  k <- 0
+    for (i in 1:n) {
+      k <- k+1
+      U[k] <- sum(tabla[[i]])
+    }
+  
+  media_estimada <- sum(U)/n
+  media_estimada
+  
+}
+
+  media_estimado_por_dormitorio <- media_estimado_2(N = 100, n = 5, M = 4)
+  media_estimado_por_dormitorio
+  
+```
+
+
+```{r}
+
+  total_estimado_2 <- function(N, n, M) {
+    
+    total_estimado <- N*media_estimado_por_dormitorio
+    total_estimado
+  }
+
+  total_estimado_por_dormitorio <- total_estimado_2(N = 100, n = 5, M = 4)
+  total_estimado_por_dormitorio
+  
+```
+
+
+```{r}
+
+cuasivarianza_estimada_2 <- function(N, n, M) {
+  U <- c(NA)
+  k <- 0
+    for (i in 1:n) {
+      k <- k+1
+      U[k] <- (sum(tabla[[i]]) - media_estimado_por_dormitorio)^2
+    }
+  
+  cuasivarianza_estimada <- sum(U)/(n-1)
+  cuasivarianza_estimada
+  
+}
+
+cuasivarianza_por_dormitorio <- cuasivarianza_estimada_2(N = 100, n =5, M = 4)
+cuasivarianza_por_dormitorio
+
+```
+
+
+
+```{r}
+
+varianza_total_estimado_2 <- function(n, N, M) {
+  
+  a <- (N^2)/ n
+  b <- 1 - (n / N)
+  c <- cuasivarianza_por_dormitorio
+  
+  varianza_total_estimado <- a * b * c
+  varianza_total_estimado
+}
+
+varianza_total_estimado_por_dormitorio <- varianza_total_estimado_2(N = 100, n = 5, M = 4)
+
+varianza_total_estimado_por_dormitorio
+
+```
+
+
+```{r}
+
+error_de_muestreo_2 <- function() {
+  
+  error_de_muestreo <- sqrt(varianza_total_estimado_por_dormitorio)
+  error_de_muestreo
+}
+
+error_de_muestreo_estimado_por_dormitorio <- error_de_muestreo_2()
+error_de_muestreo_estimado_por_dormitorio
+
+```
+
+
+iii) Estime la cantidad de dinero promedio que tienen los integrantes de la residencia estudiantil y estime su error de muestreo.
+
+```{r}
+
+varianza_media <- function(n, N, M) {
+  
+  varianza <- varianza_total_estimado_por_dormitorio / ((N * M)^2)
+
+}
+
+varianza_media_estimado_por_elemento <- varianza_media(N = 100, n = 5, M = 4)
+varianza_media_estimado_por_elemento
+  
+```
+
+
+```{r}
+
+error_de_muestreo_3 <- function() {
+  
+  error_de_muestreo <- sqrt(varianza_media_estimado_por_elemento)
+  error_de_muestreo
+}
+
+error_de_muestreo_estimado_por_elemento_para_media <- error_de_muestreo_3()
+error_de_muestreo_estimado_por_elemento_para_media
+
+```
+
